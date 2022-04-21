@@ -22,6 +22,16 @@ public OnPluginStart()
 	{
 		SetFailState("ERROR: This plugin is designed only for DM game mode");
 	}
+
+	HookEvent("server_cvar", DisableMessages, EventHookMode_Pre);
+	HookEvent("player_team", DisableMessages, EventHookMode_Pre);
+	HookEvent("player_connect", DisableMessages, EventHookMode_Pre);
+	HookEvent("player_disconnect", DisableMessages, EventHookMode_Pre);
+}
+
+public Action DisableMessages(Event hEvent, const char[] name, bool dontBroadcast)
+{
+	return Plugin_Handled;
 }
 
 public void OnEntityCreated(int entity, const char[] classname)
