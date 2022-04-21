@@ -29,6 +29,9 @@ public OnPluginStart()
 	HookEvent("player_disconnect", DisableMessages, EventHookMode_Pre);
 
 	HookEvent("player_spawn", OnPlayerSpawn, EventHookMode_Post);
+
+	HookUserMessage(GetUserMessageId("TextMsg"), OnTextMsg, true);
+	HookUserMessage(GetUserMessageId("RadioText"), OnRadioText, true);
 }
 
 public Action DisableMessages(Event hEvent, const char[] name, bool dontBroadcast)
@@ -44,6 +47,25 @@ public Action OnPlayerSpawn(Handle hEvent, const char[] name, bool dontBroadcast
 	{
 		RequestFrame(RemoveRadar, client);
 	}
+}
+
+public Action OnTextMsg(UserMsg msg_id, Handle msg, const int[] players, int playersNum, bool reliable, bool init)
+{
+	char text[64];
+
+	PbReadString(msg, "params", text, sizeof(text), 0);
+
+	if (StrContains(text, "#Player_Point_Award", false) != -1)
+	{
+		return Plugin_Handled;
+	}
+
+	return Plugin_Continue;
+}
+
+public Action OnRadioText(UserMsg msg_id, Handle msg, const int[] players, int playersNum, bool reliable, bool init)
+{
+	return Plugin_Handled;
 }
 
 public void OnEntityCreated(int entity, const char[] classname)
