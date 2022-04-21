@@ -23,3 +23,11 @@ public OnPluginStart()
 		SetFailState("ERROR: This plugin is designed only for DM game mode");
 	}
 }
+
+public void OnEntityCreated(int entity, const char[] classname)
+{
+	if (StrEqual(classname, "chicken"))
+	{
+		AcceptEntityInput(entity, "kill");
+	}
+}
