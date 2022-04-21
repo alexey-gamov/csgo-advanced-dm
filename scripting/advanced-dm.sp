@@ -27,11 +27,23 @@ public OnPluginStart()
 	HookEvent("player_team", DisableMessages, EventHookMode_Pre);
 	HookEvent("player_connect", DisableMessages, EventHookMode_Pre);
 	HookEvent("player_disconnect", DisableMessages, EventHookMode_Pre);
+
+	HookEvent("player_spawn", OnPlayerSpawn, EventHookMode_Post);
 }
 
 public Action DisableMessages(Event hEvent, const char[] name, bool dontBroadcast)
 {
 	return Plugin_Handled;
+}
+
+public Action OnPlayerSpawn(Handle hEvent, const char[] name, bool dontBroadcast)
+{
+	int client = GetClientOfUserId(GetEventInt(hEvent, "userid"));
+
+	if (IsPlayerAlive(client) && !IsFakeClient(client))
+	{
+		RequestFrame(RemoveRadar, client);
+	}
 }
 
 public void OnEntityCreated(int entity, const char[] classname)
@@ -40,4 +52,9 @@ public void OnEntityCreated(int entity, const char[] classname)
 	{
 		AcceptEntityInput(entity, "kill");
 	}
+}
+
+void RemoveRadar(int client)
+{
+	SetEntProp(client, Prop_Send, "m_iHideHUD", 1 << 12);
 }
