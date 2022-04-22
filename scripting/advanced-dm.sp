@@ -28,6 +28,7 @@ public OnPluginStart()
 	HookEvent("player_connect", DisableMessages, EventHookMode_Pre);
 	HookEvent("player_disconnect", DisableMessages, EventHookMode_Pre);
 
+	HookEvent("player_death", OnPlayerDeath, EventHookMode_Pre);
 	HookEvent("player_spawn", OnPlayerSpawn, EventHookMode_Post);
 
 	HookUserMessage(GetUserMessageId("TextMsg"), OnTextMsg, true);
@@ -37,6 +38,23 @@ public OnPluginStart()
 public Action DisableMessages(Event hEvent, const char[] name, bool dontBroadcast)
 {
 	return Plugin_Handled;
+}
+
+public Action OnPlayerDeath(Event hEvent, const char[] name, bool dontBroadcast)
+{
+	int attack = GetClientOfUserId(GetEventInt(hEvent, "attacker"));
+	int victim = GetClientOfUserId(GetEventInt(hEvent, "userid"));
+
+	SetEntProp(attack, Prop_Send, "m_bPlayerDominated", false, _, victim);
+	SetEntProp(victim, Prop_Send, "m_bPlayerDominatingMe", false, _, attack);
+
+	hEvent.SetBool("dominated", false);
+	hEvent.SetBool("assister", false);
+	hEvent.SetBool("revenge", false);
+
+	hEvent.BroadcastDisabled = IsFakeClient(attack);
+
+	return Plugin_Changed;
 }
 
 public Action OnPlayerSpawn(Handle hEvent, const char[] name, bool dontBroadcast)
