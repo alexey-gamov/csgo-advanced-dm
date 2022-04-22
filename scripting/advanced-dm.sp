@@ -33,6 +33,8 @@ public OnPluginStart()
 
 	HookUserMessage(GetUserMessageId("TextMsg"), OnTextMsg, true);
 	HookUserMessage(GetUserMessageId("RadioText"), OnRadioText, true);
+
+	AddNormalSoundHook(EventSound);
 }
 
 public Action DisableMessages(Event hEvent, const char[] name, bool dontBroadcast)
@@ -53,6 +55,12 @@ public Action OnPlayerDeath(Event hEvent, const char[] name, bool dontBroadcast)
 	hEvent.SetBool("revenge", false);
 
 	hEvent.BroadcastDisabled = IsFakeClient(attack);
+
+	// fixme: dirdy hack to disable bell on kill
+	for (int i = 1; i <= 64; i++)
+	{
+		StopSound(attack, SNDCHAN_ITEM, "buttons/bell1.wav");
+	}
 
 	return Plugin_Changed;
 }
@@ -84,6 +92,28 @@ public Action OnTextMsg(UserMsg msg_id, Handle msg, const int[] players, int pla
 public Action OnRadioText(UserMsg msg_id, Handle msg, const int[] players, int playersNum, bool reliable, bool init)
 {
 	return Plugin_Handled;
+}
+
+public Action EventSound(int clients[MAXPLAYERS], int &numClients, char sample[PLATFORM_MAX_PATH], int &entity, int &channel, float &volume, int &level, int &pitch, int &flags, char entry[PLATFORM_MAX_PATH], int &seed)
+{
+	static char sound_effects[][] =
+	{
+		"player/death",
+		"player/pl_respawn",
+		"player/bhit_helmet",
+		//"physics/body",
+		//"player/kevlar",
+	}
+
+	for (int i = 0; i < sizeof(sound_effects); i++)
+	{
+		if (StrContains(sample, sound_effects[i]) != -1)
+		{
+			return Plugin_Handled;
+		}
+	}
+
+	return Plugin_Continue;
 }
 
 public void OnEntityCreated(int entity, const char[] classname)
