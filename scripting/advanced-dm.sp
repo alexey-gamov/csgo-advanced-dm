@@ -4,11 +4,29 @@
 
 enum struct Storage {
 	KeyValues Settings;
+	ArrayList Modes;
 
 	char CurrentRound[32];
 	char NextRound[32];
 
 	bool RoundEnd;
+
+	bool ChangeMode()
+	{
+		int total = this.Modes.Length;
+		int index = this.Modes.FindString(this.CurrentRound);
+
+		if (total != 0)
+		{
+			index = (index == total - 1) ? 0 : index + 1;
+			this.Modes.GetString(index, this.CurrentRound, 32);
+
+			index = (index == total - 1) ? 0 : index + 1;
+			this.Modes.GetString(index, this.NextRound, 32);
+		}
+
+		return (total != 0);
+	}
 }
 
 Storage GameState;
@@ -74,8 +92,22 @@ public OnConfigsExecuted()
 
 public Action OnRoundPhase(Event hEvent, const char[] name, bool dontBroadcast)
 {
-	if (!(GameState.RoundEnd = StrEqual(name, "round_end")))
+	if (!(GameState.RoundEnd = StrEqual(name, "round_end")) && GameState.ChangeMode())
 	{
+		char key[64], value[64];
+
+		GameState.Settings.JumpToKey("Modes");
+		GameState.Settings.JumpToKey(GameState.CurrentRound);
+		GameState.Settings.GotoFirstSubKey(false);
+
+		do
+		{
+			GameState.Settings.GetSectionName(key, sizeof(key));
+			GameState.Settings.GetString(NULL_STRING, value, sizeof(value), "");
+			SetConVarString(FindConVar(key), value, true, false);
+		} while (GameState.Settings.GotoNextKey(false));
+
+		GameState.Settings.Rewind();
 		CreateTimer(1.5, ShowCurrentMode, -1);
 	}
 }
@@ -213,12 +245,30 @@ public void OnEntityCreated(int entity, const char[] classname)
 
 void LoadSettings(char file[32])
 {
-	char path[PLATFORM_MAX_PATH];
+	char path[PLATFORM_MAX_PATH], key[64];
 
 	GameState.Settings = new KeyValues("server-commands");
+	GameState.Modes = new ArrayList(ByteCountToCells(64));
 
 	BuildPath(Path_SM, path, sizeof(path), "configs/%s", file);
 	FileToKeyValues(GameState.Settings, path);
+
+	if (GameState.Settings.JumpToKey("Modes") && GameState.Settings.GotoFirstSubKey(true))
+	{
+		do
+		{
+			GameState.Settings.GetSectionName(key, sizeof(key));
+			GameState.Settings.GoBack();
+
+			if (GameState.Settings.JumpToKey(key) && GameState.Settings.GotoFirstSubKey(false))
+			{
+				GameState.Modes.PushString(key);
+				GameState.Settings.GoBack();
+			}
+		} while (GameState.Settings.GotoNextKey(false));
+
+		GameState.Settings.Rewind();
+	}
 }
 
 void RemoveRadar(int client)
