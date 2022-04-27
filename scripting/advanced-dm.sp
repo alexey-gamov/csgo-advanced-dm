@@ -3,6 +3,8 @@
 #include <sdkhooks>
 
 enum struct Storage {
+	KeyValues Settings;
+
 	char CurrentRound[32];
 	char NextRound[32];
 
@@ -49,7 +51,25 @@ public OnPluginStart()
 
 	AddNormalSoundHook(EventSound);
 
+	LoadSettings("advanced-dm.cfg");
 	LoadTranslations("advanced-dm.phrases");
+}
+
+public OnConfigsExecuted()
+{
+	if (GameState.Settings.JumpToKey("Settings") && GameState.Settings.GotoFirstSubKey(false))
+	{
+		char key[64], value[64];
+
+		do
+		{
+			GameState.Settings.GetSectionName(key, sizeof(key));
+			GameState.Settings.GetString(NULL_STRING, value, sizeof(value), "");
+			ServerCommand("%s %s", key, value);
+		} while (GameState.Settings.GotoNextKey(false));
+
+		GameState.Settings.Rewind();
+	}
 }
 
 public Action OnRoundPhase(Event hEvent, const char[] name, bool dontBroadcast)
@@ -189,6 +209,16 @@ public void OnEntityCreated(int entity, const char[] classname)
 	{
 		AcceptEntityInput(entity, "kill");
 	}
+}
+
+void LoadSettings(char file[32])
+{
+	char path[PLATFORM_MAX_PATH];
+
+	GameState.Settings = new KeyValues("server-commands");
+
+	BuildPath(Path_SM, path, sizeof(path), "configs/%s", file);
+	FileToKeyValues(GameState.Settings, path);
 }
 
 void RemoveRadar(int client)
