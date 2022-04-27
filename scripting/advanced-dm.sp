@@ -2,6 +2,15 @@
 #include <sdktools>
 #include <sdkhooks>
 
+enum struct Storage {
+	char CurrentRound[32];
+	char NextRound[32];
+
+	bool RoundEnd;
+}
+
+Storage GameState;
+
 public Plugin myinfo =
 {
 	name = "Advanced Deathmatch",
@@ -23,6 +32,10 @@ public OnPluginStart()
 		SetFailState("ERROR: This plugin is designed only for DM game mode");
 	}
 
+	HookEvent("round_end", OnRoundPhase, EventHookMode_Post);
+	HookEvent("round_prestart", OnRoundPhase, EventHookMode_Pre);
+	HookEvent("cs_win_panel_round", OnWinPanel, EventHookMode_Pre);
+
 	HookEvent("server_cvar", DisableMessages, EventHookMode_Pre);
 	HookEvent("player_team", DisableMessages, EventHookMode_Pre);
 	HookEvent("player_connect", DisableMessages, EventHookMode_Pre);
@@ -35,6 +48,30 @@ public OnPluginStart()
 	HookUserMessage(GetUserMessageId("RadioText"), OnRadioText, true);
 
 	AddNormalSoundHook(EventSound);
+
+	LoadTranslations("advanced-dm.phrases");
+}
+
+public Action OnRoundPhase(Event hEvent, const char[] name, bool dontBroadcast)
+{
+	if (!(GameState.RoundEnd = StrEqual(name, "round_end")))
+	{
+		CreateTimer(1.5, ShowCurrentMode, -1);
+	}
+}
+
+public Action OnWinPanel(Event hEvent, const char[] name, bool dontBroadcast)
+{
+	if (GameState.NextRound[0])
+	{
+		char message[1024] = "<b><font color='#c9c9c9'>%t:</font> <font color='#e3e3e3'>%s</font></b>";
+
+		Format(message, sizeof(message), message, "Next round", GameState.NextRound);
+
+		hEvent.SetString("funfact_token", message);
+	}
+
+	return Plugin_Changed;
 }
 
 public Action DisableMessages(Event hEvent, const char[] name, bool dontBroadcast)
@@ -72,6 +109,7 @@ public Action OnPlayerSpawn(Handle hEvent, const char[] name, bool dontBroadcast
 	if (IsPlayerAlive(client) && !IsFakeClient(client))
 	{
 		RequestFrame(RemoveRadar, client);
+		CreateTimer(0.5, ShowCurrentMode, client);
 	}
 }
 
@@ -114,6 +152,35 @@ public Action EventSound(int clients[MAXPLAYERS], int &numClients, char sample[P
 	}
 
 	return Plugin_Continue;
+}
+
+public Action ShowCurrentMode(Handle timer, int client)
+{
+	Event Status = CreateEvent("show_survival_respawn_status");
+
+	if (Status != null && !GameState.RoundEnd && GameState.CurrentRound[0])
+	{
+		char message[1024] = "<font color='#e0c675'>%t:</font><font color='#e3e3e3'>%s</font>";
+
+		Format(message, sizeof(message), message, "Current round", GameState.CurrentRound);
+
+		Status.SetString("loc_token", message);
+		Status.SetInt("duration", 3);
+		Status.SetInt("userid", -1);
+
+		int start = (client == -1) ? 1 : client;
+		int total = (client == -1) ? MaxClients : client;
+
+		for (int i = start; i <= total; i++)
+		{
+			if (IsClientInGame(i) && !IsFakeClient(i))
+			{
+				Status.FireToClient(i);
+			}
+		}
+
+		Status.Cancel();
+	}
 }
 
 public void OnEntityCreated(int entity, const char[] classname)

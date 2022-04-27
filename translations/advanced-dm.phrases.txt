@@ -1,0 +1,14 @@
+"Phrases"
+{
+	"Current round"
+	{
+		"en"	"CURRENT ROUND"
+		"ru"	"ТЕКУЩИЙ РЕЖИМ"
+	}
+
+	"Next round"
+	{
+		"en"	"SWITCHING MODE TO"
+		"ru"	"ПЕРЕКЛЮЧЕНИЕ РЕЖИМА"
+	}
+}
