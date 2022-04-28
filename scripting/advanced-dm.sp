@@ -143,7 +143,7 @@ public Action OnPlayerDeath(Event hEvent, const char[] name, bool dontBroadcast)
 	hEvent.SetBool("assister", false);
 	hEvent.SetBool("revenge", false);
 
-	hEvent.BroadcastDisabled = IsFakeClient(attack);
+	hEvent.BroadcastDisabled = IsFakeClient(attack) || (attack == victim);
 
 	// fixme: dirdy hack to disable bell on kill
 	for (int i = 1; i <= 64; i++)
@@ -171,9 +171,20 @@ public Action OnTextMsg(UserMsg msg_id, Handle msg, const int[] players, int pla
 
 	PbReadString(msg, "params", text, sizeof(text), 0);
 
-	if (StrContains(text, "#Player_Point_Award", false) != -1)
+	static char text_messages[][] =
 	{
-		return Plugin_Handled;
+		"#Player_Point_Award",
+		"#Cannot_Carry_Anymore",
+		"#Cstrike_TitlesTXT_Game_teammate",
+		"#Chat_SavePlayer"
+	}
+
+	for (int i = 0; i < sizeof(text_messages); i++)
+	{
+		if (StrContains(text, text_messages[i], false) != -1)
+		{
+			return Plugin_Handled;
+		}
 	}
 
 	return Plugin_Continue;
