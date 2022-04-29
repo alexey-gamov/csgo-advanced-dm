@@ -83,6 +83,7 @@ public OnConfigsExecuted()
 		{
 			GameState.Settings.GetSectionName(key, sizeof(key));
 			GameState.Settings.GetString(NULL_STRING, value, sizeof(value), "");
+
 			ServerCommand("%s %s", key, value);
 		} while (GameState.Settings.GotoNextKey(false));
 
@@ -104,10 +105,12 @@ public Action OnRoundPhase(Event hEvent, const char[] name, bool dontBroadcast)
 		{
 			GameState.Settings.GetSectionName(key, sizeof(key));
 			GameState.Settings.GetString(NULL_STRING, value, sizeof(value), "");
+
 			SetConVarString(FindConVar(key), value, true, false);
 		} while (GameState.Settings.GotoNextKey(false));
 
 		GameState.Settings.Rewind();
+
 		CreateTimer(1.5, ShowCurrentMode, -1);
 	}
 }
@@ -116,9 +119,9 @@ public Action OnWinPanel(Event hEvent, const char[] name, bool dontBroadcast)
 {
 	if (GameState.NextRound[0])
 	{
-		char message[1024] = "<b><font color='#c9c9c9'>%t:</font> <font color='#e3e3e3'>%s</font></b>";
+		char message[1024] = "<b><font color='#c9c9c9'>%T:</font> <font color='#e3e3e3'>%s</font></b>";
 
-		Format(message, sizeof(message), message, "Next round", GameState.NextRound);
+		Format(message, sizeof(message), message, "Next round", LANG_SERVER, GameState.NextRound);
 
 		hEvent.SetString("funfact_token", message);
 	}
@@ -223,11 +226,6 @@ public Action ShowCurrentMode(Handle timer, int client)
 
 	if (Status != null && !GameState.RoundEnd && GameState.CurrentRound[0])
 	{
-		char message[1024] = "<font color='#e0c675'>%t:</font><font color='#e3e3e3'>%s</font>";
-
-		Format(message, sizeof(message), message, "Current round", GameState.CurrentRound);
-
-		Status.SetString("loc_token", message);
 		Status.SetInt("duration", 3);
 		Status.SetInt("userid", -1);
 
@@ -236,8 +234,13 @@ public Action ShowCurrentMode(Handle timer, int client)
 
 		for (int i = start; i <= total; i++)
 		{
+			char message[1024] = "<font color='#e0c675'>%T:</font><font color='#e3e3e3'>%s</font>";
+
+			Format(message, sizeof(message), message, "Current round", i, GameState.CurrentRound);
+
 			if (IsClientInGame(i) && !IsFakeClient(i))
 			{
+				Status.SetString("loc_token", message);
 				Status.FireToClient(i);
 			}
 		}
