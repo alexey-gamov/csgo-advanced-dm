@@ -38,9 +38,9 @@ public Plugin myinfo =
 	description = "Enchantments for classic DM",
 	version = "alpha",
 	url = "https://github.com/alexey-gamov/csgo-advanced-dm"
-};
+}
 
-public OnPluginStart()
+public void OnPluginStart()
 {
 	if (GetEngineVersion() != Engine_CSGO)
 	{
@@ -73,7 +73,7 @@ public OnPluginStart()
 	LoadTranslations("advanced-dm.phrases");
 }
 
-public OnConfigsExecuted()
+public void OnConfigsExecuted()
 {
 	if (GameState.Settings.JumpToKey("Settings") && GameState.Settings.GotoFirstSubKey(false))
 	{
@@ -97,6 +97,8 @@ public Action OnRoundPhase(Event hEvent, const char[] name, bool dontBroadcast)
 	{
 		char key[64], value[64];
 
+		ConVar command;
+
 		GameState.Settings.JumpToKey("Modes");
 		GameState.Settings.JumpToKey(GameState.CurrentRound);
 		GameState.Settings.GotoFirstSubKey(false);
@@ -106,7 +108,10 @@ public Action OnRoundPhase(Event hEvent, const char[] name, bool dontBroadcast)
 			GameState.Settings.GetSectionName(key, sizeof(key));
 			GameState.Settings.GetString(NULL_STRING, value, sizeof(value), "");
 
-			SetConVarString(FindConVar(key), value, true, false);
+			if ((command = FindConVar(key)) != INVALID_HANDLE)
+			{
+				SetConVarString(command, value, true, false);
+			}
 		} while (GameState.Settings.GotoNextKey(false));
 
 		GameState.Settings.Rewind();
@@ -179,8 +184,9 @@ public Action OnTextMsg(UserMsg msg_id, Handle msg, const int[] players, int pla
 		"#Player_Point_Award",
 		"#Cannot_Carry_Anymore",
 		"#Cstrike_TitlesTXT_Game_teammate",
+		"#Hint_try_not_to_injure_teammates",
 		"#Chat_SavePlayer"
-	}
+	};
 
 	for (int i = 0; i < sizeof(text_messages); i++)
 	{
@@ -207,7 +213,7 @@ public Action EventSound(int clients[MAXPLAYERS], int &numClients, char sample[P
 		"player/bhit_helmet",
 		//"physics/body",
 		//"player/kevlar",
-	}
+	};
 
 	for (int i = 0; i < sizeof(sound_effects); i++)
 	{
@@ -265,7 +271,11 @@ void LoadSettings(char file[32])
 	GameState.Modes = new ArrayList(ByteCountToCells(64));
 
 	BuildPath(Path_SM, path, sizeof(path), "configs/%s", file);
-	FileToKeyValues(GameState.Settings, path);
+
+	if (!FileToKeyValues(GameState.Settings, path))
+	{
+		SetFailState("The configuration file could not be read");
+	}
 
 	if (GameState.Settings.JumpToKey("Modes") && GameState.Settings.GotoFirstSubKey(true))
 	{
