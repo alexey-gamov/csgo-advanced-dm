@@ -29,7 +29,18 @@ enum struct Storage {
 	}
 }
 
+enum struct Arsenal {
+	void Add(char[] category, char[] weapon, char[] name, int clip)
+	{
+	}
+
+	void Initialize()
+	{
+	}
+}
+
 Storage GameState;
+Arsenal Weapons;
 
 public Plugin myinfo =
 {
@@ -89,6 +100,46 @@ public void OnConfigsExecuted()
 
 		GameState.Settings.Rewind();
 	}
+
+	Weapons.Initialize();
+
+	Weapons.Add("rifles", "weapon_ak47", "AK-47", 30);
+	Weapons.Add("rifles", "weapon_m4a1", "M4A1", 30);
+	Weapons.Add("rifles", "weapon_m4a1_silencer", "M4A1-S", 25);
+	Weapons.Add("rifles", "weapon_sg556", "SG 553", 30);
+	Weapons.Add("rifles", "weapon_aug", "AUG", 30);
+	Weapons.Add("rifles", "weapon_galilar", "Galil AR", 35);
+	Weapons.Add("rifles", "weapon_famas", "FAMAS", 25);
+	Weapons.Add("rifles", "weapon_awp", "AWP", 10);
+	Weapons.Add("rifles", "weapon_ssg08", "SSG 08", 10);
+	Weapons.Add("rifles", "weapon_g3sg1", "G3SG1", 20);
+	Weapons.Add("rifles", "weapon_scar20", "SCAR-20", 20);
+
+	Weapons.Add("heavy", "weapon_m249", "M249", 100);
+	Weapons.Add("heavy", "weapon_negev", "Negev", 150);
+	Weapons.Add("heavy", "weapon_nova", "Nova", 8);
+	Weapons.Add("heavy", "weapon_xm1014", "XM1014", 7);
+	Weapons.Add("heavy", "weapon_sawedoff", "Sawed-Off", 7);
+	Weapons.Add("heavy", "weapon_mag7", "MAG-7", 5);
+
+	Weapons.Add("smgs", "weapon_mac10", "MAC-10", 30);
+	Weapons.Add("smgs", "weapon_mp9", "MP9", 30);
+	Weapons.Add("smgs", "weapon_mp7", "MP7", 30);
+	Weapons.Add("smgs", "weapon_mp5sd", "MP5SD", 30); 
+	Weapons.Add("smgs", "weapon_ump45", "UMP-45", 25);
+	Weapons.Add("smgs", "weapon_p90", "P90", 50);
+	Weapons.Add("smgs", "weapon_bizon", "PP-Bizon", 64);
+
+	Weapons.Add("pistols", "weapon_glock", "Glock-18", 20);
+	Weapons.Add("pistols", "weapon_p250", "P250", 13);
+	Weapons.Add("pistols", "weapon_cz75a", "CZ75-A", 12);
+	Weapons.Add("pistols", "weapon_usp_silencer", "USP-S", 12);
+	Weapons.Add("pistols", "weapon_fiveseven", "Five-SeveN", 20);
+	Weapons.Add("pistols", "weapon_deagle", "Desert Eagle", 7);
+	Weapons.Add("pistols", "weapon_revolver", "R8", 8);
+	Weapons.Add("pistols", "weapon_elite", "Dual Berettas", 30);
+	Weapons.Add("pistols", "weapon_tec9", "Tec-9", 24);
+	Weapons.Add("pistols", "weapon_hkp2000", "P2000", 13);
 }
 
 public Action OnRoundPhase(Event hEvent, const char[] name, bool dontBroadcast)
