@@ -30,12 +30,16 @@ enum struct Storage {
 }
 
 enum struct Arsenal {
+	KeyValues Clip;
+
 	void Add(char[] category, char[] weapon, char[] name, int clip)
 	{
+		this.Clip.SetNum(weapon, clip);
 	}
 
 	void Initialize()
 	{
+		this.Clip = new KeyValues("weapon_clip");
 	}
 }
 
@@ -194,9 +198,20 @@ public Action OnPlayerDeath(Event hEvent, const char[] name, bool dontBroadcast)
 {
 	int attack = GetClientOfUserId(GetEventInt(hEvent, "attacker"));
 	int victim = GetClientOfUserId(GetEventInt(hEvent, "userid"));
+	int weapon = GetEntPropEnt(attack, Prop_Data, "m_hActiveWeapon");
 
 	SetEntProp(attack, Prop_Send, "m_bPlayerDominated", false, _, victim);
 	SetEntProp(victim, Prop_Send, "m_bPlayerDominatingMe", false, _, attack);
+
+	if (IsValidEntity(weapon))
+	{
+		char weaponName[32];
+
+		hEvent.GetString("weapon", weaponName, sizeof(weaponName));
+		Format(weaponName, sizeof(weaponName), "weapon_%s", weaponName);
+
+		SetEntProp(weapon, Prop_Send, "m_iClip1", Weapons.Clip.GetNum(weaponName) + 1);
+	}
 
 	hEvent.SetBool("dominated", false);
 	hEvent.SetBool("assister", false);
