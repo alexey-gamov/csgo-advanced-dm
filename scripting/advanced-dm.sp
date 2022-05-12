@@ -30,15 +30,18 @@ enum struct Storage {
 }
 
 enum struct Arsenal {
+	KeyValues Slot;
 	KeyValues Clip;
 
 	void Add(char[] category, char[] weapon, char[] name, int clip)
 	{
+		this.Slot.SetNum(weapon, StrEqual(category, "pistols"));
 		this.Clip.SetNum(weapon, clip);
 	}
 
 	void Initialize()
 	{
+		this.Slot = new KeyValues("weapon_slot");
 		this.Clip = new KeyValues("weapon_clip");
 	}
 }
@@ -358,6 +361,29 @@ void LoadSettings(char file[32])
 		} while (GameState.Settings.GotoNextKey(false));
 
 		GameState.Settings.Rewind();
+	}
+}
+
+void GiveWeapon(int client, char[] weapon, bool fast_switch = true)
+{
+	int entity;
+
+	if ((entity = GetPlayerWeaponSlot(client, Weapons.Slot.GetNum(weapon))) != -1)
+	{
+		RemovePlayerItem(client, entity);
+		AcceptEntityInput(entity, "kill");
+	}
+
+	GivePlayerItem(client, weapon);
+
+	if (fast_switch)
+	{
+		SetEntPropFloat(client, Prop_Send, "m_flNextAttack", GetGameTime());
+
+		if (IsValidEntity((entity = GetEntPropEnt(client, Prop_Send, "m_hViewModel"))))
+		{
+			SetEntProp(entity, Prop_Send, "m_nSequence", StrEqual(weapon, "weapon_m4a1_silencer"));
+		}
 	}
 }
 
