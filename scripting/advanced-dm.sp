@@ -97,6 +97,11 @@ public void OnPluginStart()
 	HookUserMessage(GetUserMessageId("TextMsg"), OnTextMsg, true);
 	HookUserMessage(GetUserMessageId("RadioText"), OnRadioText, true);
 
+	AddCommandListener(BuyCommand, "autobuy");
+	AddCommandListener(BuyCommand, "rebuy");
+	AddCommandListener(BuyCommand, "buy");
+	AddCommandListener(BuyCommand, "drop");
+
 	AddNormalSoundHook(EventSound);
 
 	LoadSettings("advanced-dm.cfg");
@@ -290,6 +295,28 @@ public Action OnRadioText(UserMsg msg_id, Handle msg, const int[] players, int p
 	return Plugin_Handled;
 }
 
+public Action BuyCommand(int client, const char[] command, int args)
+{
+	if (StrEqual(command, "drop"))
+	{
+		if (!GetClientMenu(client))
+		{
+			Weapons.BuyMenu.SetTitle("%T", "Buy menu", client, GameState.CurrentRound, "G");
+			Weapons.BuyMenu.Display(client, MENU_TIME_FOREVER);
+		}
+		else if(!Weapons.ListEnd[client])
+		{
+			CancelClientMenu(client);
+		}
+	}
+	else if (StrEqual(command, "rebuy"))
+	{
+		PrintToChat(client, "%T", "How to buy", client, 0x08, "G");
+	}
+
+	return Plugin_Continue;
+}
+
 public Action EventSound(int clients[MAXPLAYERS], int &numClients, char sample[PLATFORM_MAX_PATH], int &entity, int &channel, float &volume, int &level, int &pitch, int &flags, char entry[PLATFORM_MAX_PATH], int &seed)
 {
 	static char sound_effects[][] =
@@ -299,6 +326,7 @@ public Action EventSound(int clients[MAXPLAYERS], int &numClients, char sample[P
 		"player/bhit_helmet",
 		//"physics/body",
 		//"player/kevlar",
+		"buttons/button14"
 	};
 
 	for (int i = 0; i < sizeof(sound_effects); i++)
