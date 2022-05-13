@@ -30,17 +30,29 @@ enum struct Storage {
 }
 
 enum struct Arsenal {
+	Menu BuyMenu;
+
 	KeyValues Slot;
 	KeyValues Clip;
 
+	bool ListEnd[MAXPLAYERS];
+
 	void Add(char[] category, char[] weapon, char[] name, int clip)
 	{
+		char item[32];
+
+		Format(item, sizeof(item), "%s:%s", category, weapon);
+
+		this.BuyMenu.AddItem(item, name);
+
 		this.Slot.SetNum(weapon, StrEqual(category, "pistols"));
 		this.Clip.SetNum(weapon, clip);
 	}
 
 	void Initialize()
 	{
+		this.BuyMenu = new Menu(BuyMenuHandler, MenuAction_DrawItem);
+
 		this.Slot = new KeyValues("weapon_slot");
 		this.Clip = new KeyValues("weapon_clip");
 	}
@@ -147,6 +159,11 @@ public void OnConfigsExecuted()
 	Weapons.Add("pistols", "weapon_elite", "Dual Berettas", 30);
 	Weapons.Add("pistols", "weapon_tec9", "Tec-9", 24);
 	Weapons.Add("pistols", "weapon_hkp2000", "P2000", 13);
+}
+
+public void OnClientPutInServer(int client)
+{
+	Weapons.ListEnd[client] = false;
 }
 
 public Action OnRoundPhase(Event hEvent, const char[] name, bool dontBroadcast)
@@ -322,6 +339,42 @@ public Action ShowCurrentMode(Handle timer, int client)
 
 		Status.Cancel();
 	}
+}
+
+public int BuyMenuHandler(Menu menu, MenuAction action, int client, int item)
+{
+	char info[32];
+	bool next;
+
+	if (action != MenuAction_End)
+	{
+		next = !Weapons.ListEnd[client];
+		GetMenuItem(menu, item, info, sizeof(info));
+	}
+
+	if (action == MenuAction_DrawItem)
+	{
+		SplitString(info, ":", info, sizeof(info));
+
+		if (StrEqual(info, "pistols") == next)
+		{
+			return ITEMDRAW_RAWLINE;
+		}
+	}
+
+	if (action == MenuAction_Select)
+	{
+		Format(info, sizeof(info), info[FindCharInString(info, ':') + 1]);
+		GiveWeapon(client, info);
+	}
+
+	if (action == MenuAction_Select || action == MenuAction_Cancel)
+	{
+		ClientCommand(client, next ? "drop" : " ");
+		Weapons.ListEnd[client] = next;
+	}
+
+	return 0;
 }
 
 public void OnEntityCreated(int entity, const char[] classname)
