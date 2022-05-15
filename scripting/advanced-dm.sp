@@ -221,8 +221,8 @@ public Action DisableMessages(Event hEvent, const char[] name, bool dontBroadcas
 
 public Action OnPlayerDeath(Event hEvent, const char[] name, bool dontBroadcast)
 {
-	int attack = GetClientOfUserId(GetEventInt(hEvent, "attacker"));
-	int victim = GetClientOfUserId(GetEventInt(hEvent, "userid"));
+	int attack = GetClientOfUserId(hEvent.GetInt("attacker"));
+	int victim = GetClientOfUserId(hEvent.GetInt("userid"));
 	int weapon = GetEntPropEnt(attack, Prop_Data, "m_hActiveWeapon");
 
 	SetEntProp(attack, Prop_Send, "m_bPlayerDominated", false, _, victim);
@@ -232,7 +232,7 @@ public Action OnPlayerDeath(Event hEvent, const char[] name, bool dontBroadcast)
 	{
 		char weaponName[32];
 
-		hEvent.GetString("weapon", weaponName, sizeof(weaponName));
+		GetEventString(hEvent, "weapon", weaponName, sizeof(weaponName));
 		Format(weaponName, sizeof(weaponName), "weapon_%s", weaponName);
 
 		SetEntProp(weapon, Prop_Send, "m_iClip1", Weapons.Clip.GetNum(weaponName) + 1);
@@ -244,7 +244,7 @@ public Action OnPlayerDeath(Event hEvent, const char[] name, bool dontBroadcast)
 
 	hEvent.BroadcastDisabled = IsFakeClient(attack) || (attack == victim);
 
-	// fixme: dirdy hack to disable bell on kill
+	// fixme: dirty hack to disable bell on kill
 	for (int i = 1; i <= 64; i++)
 	{
 		StopSound(attack, SNDCHAN_ITEM, "buttons/bell1.wav");
@@ -253,9 +253,9 @@ public Action OnPlayerDeath(Event hEvent, const char[] name, bool dontBroadcast)
 	return Plugin_Changed;
 }
 
-public Action OnPlayerSpawn(Handle hEvent, const char[] name, bool dontBroadcast)
+public Action OnPlayerSpawn(Event hEvent, const char[] name, bool dontBroadcast)
 {
-	int client = GetClientOfUserId(GetEventInt(hEvent, "userid"));
+	int client = GetClientOfUserId(hEvent.GetInt("userid"));
 
 	if (IsPlayerAlive(client) && !IsFakeClient(client))
 	{
@@ -342,12 +342,12 @@ public Action EventSound(int clients[MAXPLAYERS], int &numClients, char sample[P
 
 public Action ShowCurrentMode(Handle timer, int client)
 {
-	Event Status = CreateEvent("show_survival_respawn_status");
+	Event hEvent = CreateEvent("show_survival_respawn_status");
 
-	if (Status != null && !GameState.RoundEnd && GameState.CurrentRound[0])
+	if (hEvent != null && !GameState.RoundEnd && GameState.CurrentRound[0])
 	{
-		Status.SetInt("duration", 3);
-		Status.SetInt("userid", -1);
+		hEvent.SetInt("duration", 3);
+		hEvent.SetInt("userid", -1);
 
 		int start = (client == -1) ? 1 : client;
 		int total = (client == -1) ? MaxClients : client;
@@ -360,12 +360,12 @@ public Action ShowCurrentMode(Handle timer, int client)
 
 			if (IsClientInGame(i) && !IsFakeClient(i))
 			{
-				Status.SetString("loc_token", message);
-				Status.FireToClient(i);
+				hEvent.SetString("loc_token", message);
+				hEvent.FireToClient(i);
 			}
 		}
 
-		Status.Cancel();
+		hEvent.Cancel();
 	}
 }
 
