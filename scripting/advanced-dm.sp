@@ -1,6 +1,7 @@
 #include <sourcemod>
 #include <sdktools>
 #include <sdkhooks>
+#include <clientprefs>
 
 enum struct Storage {
 	KeyValues Settings;
@@ -35,6 +36,9 @@ enum struct Arsenal {
 	KeyValues Slot;
 	KeyValues Clip;
 
+	Handle Cookies[2];
+	ArrayList User[2];
+
 	bool ListEnd[MAXPLAYERS];
 
 	void Add(char[] category, char[] weapon, char[] name, int clip)
@@ -51,10 +55,24 @@ enum struct Arsenal {
 
 	void Initialize()
 	{
+		this.Cookies[0] = RegClientCookie("deathmatch_slot0", "Primary Weapon", CookieAccess_Protected);
+		this.Cookies[1] = RegClientCookie("deathmatch_slot1", "Secondary Weapon", CookieAccess_Protected);
+
+		this.User[0] = new ArrayList(32, MAXPLAYERS);
+		this.User[1] = new ArrayList(32, MAXPLAYERS);
+
 		this.BuyMenu = new Menu(BuyMenuHandler, MenuAction_DrawItem);
 
 		this.Slot = new KeyValues("weapon_slot");
 		this.Clip = new KeyValues("weapon_clip");
+	}
+
+	void Store(int client, char[] item)
+	{
+		int slot = this.Slot.GetNum(item);
+
+		this.User[slot].SetString(client, item);
+		SetClientCookie(client, this.Cookies[slot], item);
 	}
 }
 
@@ -170,6 +188,17 @@ public void OnConfigsExecuted()
 public void OnClientPutInServer(int client)
 {
 	Weapons.ListEnd[client] = false;
+}
+
+public void OnClientCookiesCached(int client)
+{
+	char item[32];
+
+	for (int i = 0; i <= 1; i++)
+	{
+		GetClientCookie(client, Weapons.Cookies[i], item, sizeof(item));
+		Weapons.User[i].SetString(client, item);
+	}
 }
 
 public Action OnRoundPhase(Event hEvent, const char[] name, bool dontBroadcast)
@@ -318,7 +347,34 @@ public Action BuyCommand(int client, const char[] command, int args)
 	}
 	else if (StrEqual(command, "rebuy"))
 	{
-		PrintToChat(client, "%T", "How to buy", client, 0x08, "G");
+		char weapon[32];
+		bool showup = false;
+
+		for (int i = 1; i >= 0; i--)
+		{
+			Weapons.User[i].GetString(client, weapon, sizeof(weapon));
+
+			if (!StrEqual(weapon, ""))
+			{
+				GiveWeapon(client, weapon);
+			}
+			else
+			{
+				Weapons.ListEnd[client] = !!i;
+				showup = true;
+			}
+		}
+
+		if (showup)
+		{
+			ClientCommand(client, "drop");
+		}
+		else
+		{
+			PrintToChat(client, "%T", "How to buy", client, 0x08, "G");
+		}
+
+		return Plugin_Handled;
 	}
 
 	return Plugin_Continue;
@@ -405,6 +461,7 @@ public int BuyMenuHandler(Menu menu, MenuAction action, int client, int item)
 	if (action == MenuAction_Select)
 	{
 		Format(info, sizeof(info), info[FindCharInString(info, ':') + 1]);
+		Weapons.Store(client, info);
 		GiveWeapon(client, info);
 	}
 
