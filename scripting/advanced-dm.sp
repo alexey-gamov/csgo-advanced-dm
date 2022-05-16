@@ -72,6 +72,7 @@ enum struct Arsenal {
 		int slot = this.Slot.GetNum(item);
 
 		this.User[slot].SetString(client, item);
+
 		SetClientCookie(client, this.Cookies[slot], item);
 	}
 }
@@ -144,8 +145,6 @@ public void OnConfigsExecuted()
 		GameState.Settings.Rewind();
 	}
 
-	Weapons.Initialize();
-
 	Weapons.Add("rifles", "weapon_ak47", "AK-47", 30);
 	Weapons.Add("rifles", "weapon_m4a1", "M4A1", 30);
 	Weapons.Add("rifles", "weapon_m4a1_silencer", "M4A1-S", 25);
@@ -185,20 +184,17 @@ public void OnConfigsExecuted()
 	Weapons.Add("pistols", "weapon_hkp2000", "P2000", 13);
 }
 
-public void OnClientPutInServer(int client)
-{
-	Weapons.ListEnd[client] = false;
-}
-
 public void OnClientCookiesCached(int client)
 {
 	char item[32];
 
-	for (int i = 0; i <= 1; i++)
+	for (int slot = 1; slot >= 0; slot--)
 	{
-		GetClientCookie(client, Weapons.Cookies[i], item, sizeof(item));
-		Weapons.User[i].SetString(client, item);
+		GetClientCookie(client, Weapons.Cookies[slot], item, sizeof(item));
+		Weapons.User[slot].SetString(client, item);
 	}
+
+	Weapons.ListEnd[client] = false;
 }
 
 public Action OnRoundPhase(Event hEvent, const char[] name, bool dontBroadcast)
@@ -350,9 +346,9 @@ public Action BuyCommand(int client, const char[] command, int args)
 		char weapon[32];
 		bool showup = false;
 
-		for (int i = 1; i >= 0; i--)
+		for (int slot = 1; slot >= 0; slot--)
 		{
-			Weapons.User[i].GetString(client, weapon, sizeof(weapon));
+			Weapons.User[slot].GetString(client, weapon, sizeof(weapon));
 
 			if (!StrEqual(weapon, ""))
 			{
@@ -360,7 +356,7 @@ public Action BuyCommand(int client, const char[] command, int args)
 			}
 			else
 			{
-				Weapons.ListEnd[client] = !!i;
+				Weapons.ListEnd[client] = !!slot;
 				showup = true;
 			}
 		}
@@ -444,8 +440,9 @@ public int BuyMenuHandler(Menu menu, MenuAction action, int client, int item)
 
 	if (action != MenuAction_End)
 	{
-		next = !Weapons.ListEnd[client];
 		GetMenuItem(menu, item, info, sizeof(info));
+
+		next = !Weapons.ListEnd[client];
 	}
 
 	if (action == MenuAction_DrawItem)
@@ -461,8 +458,9 @@ public int BuyMenuHandler(Menu menu, MenuAction action, int client, int item)
 	if (action == MenuAction_Select)
 	{
 		Format(info, sizeof(info), info[FindCharInString(info, ':') + 1]);
-		Weapons.Store(client, info);
+
 		GiveWeapon(client, info);
+		Weapons.Store(client, info);
 	}
 
 	if (action == MenuAction_Select || action == MenuAction_Cancel)
@@ -511,6 +509,16 @@ void LoadSettings(char file[32])
 		} while (GameState.Settings.GotoNextKey(false));
 
 		GameState.Settings.Rewind();
+	}
+
+	Weapons.Initialize();
+
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (IsClientConnected(i) && !IsFakeClient(i))
+		{
+			OnClientCookiesCached(i);
+		}
 	}
 }
 
