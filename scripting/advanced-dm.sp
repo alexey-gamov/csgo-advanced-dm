@@ -41,18 +41,6 @@ enum struct Arsenal {
 
 	bool ListEnd[MAXPLAYERS];
 
-	void Add(char[] category, char[] weapon, char[] name, int clip)
-	{
-		char item[32];
-
-		Format(item, sizeof(item), "%s:%s", category, weapon);
-
-		this.BuyMenu.AddItem(item, name);
-
-		this.Slot.SetNum(weapon, StrEqual(category, "pistols"));
-		this.Clip.SetNum(weapon, clip);
-	}
-
 	void Initialize()
 	{
 		this.Cookies[0] = RegClientCookie("deathmatch_slot0", "Primary Weapon", CookieAccess_Protected);
@@ -65,6 +53,18 @@ enum struct Arsenal {
 
 		this.Slot = new KeyValues("weapon_slot");
 		this.Clip = new KeyValues("weapon_clip");
+	}
+
+	void Add(char[] category, char[] weapon, char[] name, int clip)
+	{
+		char item[32];
+
+		Format(item, sizeof(item), "%s:%s", category, weapon);
+
+		this.BuyMenu.AddItem(item, name);
+
+		this.Slot.SetNum(weapon, StrEqual(category, "pistols"));
+		this.Clip.SetNum(weapon, clip);
 	}
 
 	void Store(int client, char[] item)
@@ -113,15 +113,15 @@ public void OnPluginStart()
 	HookEvent("player_death", OnPlayerDeath, EventHookMode_Pre);
 	HookEvent("player_spawn", OnPlayerSpawn, EventHookMode_Post);
 
-	HookUserMessage(GetUserMessageId("TextMsg"), OnTextMsg, true);
-	HookUserMessage(GetUserMessageId("RadioText"), OnRadioText, true);
+	HookUserMessage(GetUserMessageId("TextMsg"), DisableChat, true);
+	HookUserMessage(GetUserMessageId("RadioText"), DisableRadio, true);
 
 	AddCommandListener(BuyCommand, "autobuy");
 	AddCommandListener(BuyCommand, "rebuy");
 	AddCommandListener(BuyCommand, "buy");
 	AddCommandListener(BuyCommand, "drop");
 
-	AddNormalSoundHook(EventSound);
+	AddNormalSoundHook(DisableSound);
 	AddTempEntHook("Sparks", DisableEffect);
 
 	LoadSettings("advanced-dm.cfg");
@@ -240,11 +240,6 @@ public Action OnWinPanel(Event hEvent, const char[] name, bool dontBroadcast)
 	return Plugin_Changed;
 }
 
-public Action DisableMessages(Event hEvent, const char[] name, bool dontBroadcast)
-{
-	return Plugin_Handled;
-}
-
 public Action OnPlayerDeath(Event hEvent, const char[] name, bool dontBroadcast)
 {
 	int attack = GetClientOfUserId(hEvent.GetInt("attacker"));
@@ -294,114 +289,6 @@ public Action OnPlayerSpawn(Event hEvent, const char[] name, bool dontBroadcast)
 		RequestFrame(RemoveRadar, client);
 		CreateTimer(0.5, ShowCurrentMode, client);
 	}
-}
-
-public Action OnTextMsg(UserMsg msg_id, Handle msg, const int[] players, int playersNum, bool reliable, bool init)
-{
-	char text[64];
-
-	PbReadString(msg, "params", text, sizeof(text), 0);
-
-	static char text_messages[][] =
-	{
-		"#Player_Point_Award",
-		"#Cannot_Carry_Anymore",
-		"#Cstrike_TitlesTXT_Game_teammate",
-		"#Hint_try_not_to_injure_teammates",
-		"#Chat_SavePlayer"
-	};
-
-	for (int i = 0; i < sizeof(text_messages); i++)
-	{
-		if (StrContains(text, text_messages[i], false) != -1)
-		{
-			return Plugin_Handled;
-		}
-	}
-
-	return Plugin_Continue;
-}
-
-public Action OnRadioText(UserMsg msg_id, Handle msg, const int[] players, int playersNum, bool reliable, bool init)
-{
-	return Plugin_Handled;
-}
-
-public Action BuyCommand(int client, const char[] command, int args)
-{
-	if (StrEqual(command, "drop"))
-	{
-		if (!GetClientMenu(client))
-		{
-			Weapons.BuyMenu.SetTitle("%T", "Buy menu", client, GameState.CurrentRound, "G");
-			Weapons.BuyMenu.Display(client, MENU_TIME_FOREVER);
-		}
-		else if(!Weapons.ListEnd[client])
-		{
-			CancelClientMenu(client);
-		}
-	}
-	else if (StrEqual(command, "rebuy"))
-	{
-		char weapon[32];
-		bool showup = false;
-
-		for (int slot = 1; slot >= 0; slot--)
-		{
-			Weapons.User[slot].GetString(client, weapon, sizeof(weapon));
-
-			if (!StrEqual(weapon, ""))
-			{
-				GiveWeapon(client, weapon);
-			}
-			else
-			{
-				Weapons.ListEnd[client] = !!slot;
-				showup = true;
-			}
-		}
-
-		if (showup)
-		{
-			ClientCommand(client, "drop");
-		}
-		else
-		{
-			PrintToChat(client, "%T", "How to buy", client, 0x08, "G");
-		}
-
-		return Plugin_Handled;
-	}
-
-	return Plugin_Continue;
-}
-
-public Action EventSound(int clients[MAXPLAYERS], int &numClients, char sample[PLATFORM_MAX_PATH], int &entity, int &channel, float &volume, int &level, int &pitch, int &flags, char entry[PLATFORM_MAX_PATH], int &seed)
-{
-	static char sound_effects[][] =
-	{
-		"player/death",
-		"player/pl_respawn",
-		"player/bhit_helmet",
-		//"physics/body",
-		//"player/kevlar",
-		"buttons/button14"
-	};
-
-	for (int i = 0; i < sizeof(sound_effects); i++)
-	{
-		if (StrContains(sample, sound_effects[i]) != -1)
-		{
-			return Plugin_Handled;
-		}
-	}
-
-	return Plugin_Continue;
-}
-
-public Action DisableEffect(const char[] name, const int[] clients, int num, float delay)
-{
-	return Plugin_Handled;
 }
 
 public Action ShowCurrentMode(Handle timer, int client)
@@ -472,6 +359,119 @@ public int BuyMenuHandler(Menu menu, MenuAction action, int client, int item)
 	return 0;
 }
 
+public Action BuyCommand(int client, const char[] command, int args)
+{
+	if (StrEqual(command, "drop"))
+	{
+		if (!GetClientMenu(client))
+		{
+			Weapons.BuyMenu.SetTitle("%T", "Buy menu", client, GameState.CurrentRound, "G");
+			Weapons.BuyMenu.Display(client, MENU_TIME_FOREVER);
+		}
+		else if(!Weapons.ListEnd[client])
+		{
+			CancelClientMenu(client);
+		}
+	}
+	else if (StrEqual(command, "rebuy"))
+	{
+		char weapon[32];
+		bool showup = false;
+
+		for (int slot = 1; slot >= 0; slot--)
+		{
+			Weapons.User[slot].GetString(client, weapon, sizeof(weapon));
+
+			if (!StrEqual(weapon, ""))
+			{
+				GiveWeapon(client, weapon);
+			}
+			else
+			{
+				Weapons.ListEnd[client] = !!slot;
+				showup = true;
+			}
+		}
+
+		if (showup)
+		{
+			ClientCommand(client, "drop");
+		}
+		else
+		{
+			PrintToChat(client, "%T", "How to buy", client, 0x08, "G");
+		}
+
+		return Plugin_Handled;
+	}
+
+	return Plugin_Continue;
+}
+
+public Action DisableMessages(Event hEvent, const char[] name, bool dontBroadcast)
+{
+	return Plugin_Handled;
+}
+
+public Action DisableChat(UserMsg msg_id, Handle msg, const int[] players, int playersNum, bool reliable, bool init)
+{
+	char text[64];
+
+	PbReadString(msg, "params", text, sizeof(text), 0);
+
+	static char text_messages[][] =
+	{
+		"#Player_Point_Award",
+		"#Cannot_Carry_Anymore",
+		"#Cstrike_TitlesTXT_Game_teammate",
+		"#Hint_try_not_to_injure_teammates",
+		"#Chat_SavePlayer"
+	};
+
+	for (int i = 0; i < sizeof(text_messages); i++)
+	{
+		if (StrContains(text, text_messages[i], false) != -1)
+		{
+			return Plugin_Handled;
+		}
+	}
+
+	return Plugin_Continue;
+}
+
+public Action DisableRadio(UserMsg msg_id, Handle msg, const int[] players, int playersNum, bool reliable, bool init)
+{
+	return Plugin_Handled;
+}
+
+public Action DisableSound(int clients[MAXPLAYERS], int &numClients, char sample[PLATFORM_MAX_PATH], int &entity, int &channel, float &volume, int &level, int &pitch, int &flags, char entry[PLATFORM_MAX_PATH], int &seed)
+{
+	static char sound_effects[][] =
+	{
+		"player/death",
+		"player/pl_respawn",
+		"player/bhit_helmet",
+		//"physics/body",
+		//"player/kevlar",
+		"buttons/button14"
+	};
+
+	for (int i = 0; i < sizeof(sound_effects); i++)
+	{
+		if (StrContains(sample, sound_effects[i]) != -1)
+		{
+			return Plugin_Handled;
+		}
+	}
+
+	return Plugin_Continue;
+}
+
+public Action DisableEffect(const char[] name, const int[] clients, int num, float delay)
+{
+	return Plugin_Handled;
+}
+
 public void OnEntityCreated(int entity, const char[] classname)
 {
 	if (StrEqual(classname, "chicken"))
@@ -522,6 +522,11 @@ void LoadSettings(char file[32])
 	}
 }
 
+void RemoveRadar(int client)
+{
+	SetEntProp(client, Prop_Send, "m_iHideHUD", 1 << 12);
+}
+
 void GiveWeapon(int client, char[] weapon, bool fast_switch = true)
 {
 	int entity;
@@ -543,9 +548,4 @@ void GiveWeapon(int client, char[] weapon, bool fast_switch = true)
 			SetEntProp(entity, Prop_Send, "m_nSequence", StrEqual(weapon, "weapon_m4a1_silencer"));
 		}
 	}
-}
-
-void RemoveRadar(int client)
-{
-	SetEntProp(client, Prop_Send, "m_iHideHUD", 1 << 12);
 }
