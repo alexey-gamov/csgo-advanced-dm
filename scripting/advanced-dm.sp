@@ -238,17 +238,23 @@ public Action OnPlayerDeath(Event hEvent, const char[] name, bool dontBroadcast)
 		SetEntProp(weapon, Prop_Send, "m_iClip1", Weapons.Clip.GetNum(weaponName) + 1);
 	}
 
+	if (!IsFakeClient(attack))
+	{
+		Handle fade = StartMessageOne("Fade", attack);
+
+		PbSetInt(fade, "duration", 250);
+		PbSetInt(fade, "hold_time", 0);
+		PbSetInt(fade, "flags", 0x0001);
+		PbSetColor(fade, "clr", {150, 150, 150, 75});
+
+		EndMessage();
+	}
+
 	hEvent.SetBool("dominated", false);
 	hEvent.SetBool("assister", false);
 	hEvent.SetBool("revenge", false);
 
 	hEvent.BroadcastDisabled = IsFakeClient(attack) || (attack == victim);
-
-	// fixme: dirty hack to disable bell on kill
-	for (int i = 1; i <= 64; i++)
-	{
-		StopSound(attack, SNDCHAN_ITEM, "buttons/bell1.wav");
-	}
 
 	return Plugin_Changed;
 }
