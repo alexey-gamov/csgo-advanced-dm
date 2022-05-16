@@ -103,6 +103,7 @@ public void OnPluginStart()
 	AddCommandListener(BuyCommand, "drop");
 
 	AddNormalSoundHook(EventSound);
+	AddTempEntHook("Sparks", DisableEffect);
 
 	LoadSettings("advanced-dm.cfg");
 	LoadTranslations("advanced-dm.phrases");
@@ -344,6 +345,11 @@ public Action EventSound(int clients[MAXPLAYERS], int &numClients, char sample[P
 	}
 
 	return Plugin_Continue;
+}
+
+public Action DisableEffect(const char[] name, const int[] clients, int num, float delay)
+{
+	return Plugin_Handled;
 }
 
 public Action ShowCurrentMode(Handle timer, int client)
