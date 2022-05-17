@@ -26,7 +26,7 @@ enum struct Storage {
 			this.Modes.GetString(index, this.NextRound, 32);
 		}
 
-		return (total != 0);
+		return !!total;
 	}
 }
 
@@ -101,7 +101,7 @@ public void OnPluginStart()
 		SetFailState("ERROR: This plugin is designed only for DM game mode");
 	}
 
-	HookEvent("round_end", OnRoundPhase, EventHookMode_Post);
+	HookEvent("round_end", OnRoundPhase, EventHookMode_Pre);
 	HookEvent("round_prestart", OnRoundPhase, EventHookMode_Pre);
 	HookEvent("cs_win_panel_round", OnWinPanel, EventHookMode_Pre);
 
@@ -224,6 +224,11 @@ public Action OnRoundPhase(Event hEvent, const char[] name, bool dontBroadcast)
 
 		CreateTimer(1.5, ShowCurrentMode, -1);
 	}
+	else
+	{
+		hEvent.SetInt("reason", 16);
+		hEvent.SetInt("winner", 1);
+	}
 }
 
 public Action OnWinPanel(Event hEvent, const char[] name, bool dontBroadcast)
@@ -295,7 +300,7 @@ public Action ShowCurrentMode(Handle timer, int client)
 {
 	Event hEvent = CreateEvent("show_survival_respawn_status");
 
-	if (hEvent != null && !GameState.RoundEnd && GameState.CurrentRound[0])
+	if (hEvent != null && !GameState.RoundEnd && GameState.Modes.Length > 0 && GameState.CurrentRound[0])
 	{
 		hEvent.SetInt("duration", 3);
 		hEvent.SetInt("userid", -1);
@@ -352,7 +357,7 @@ public int BuyMenuHandler(Menu menu, MenuAction action, int client, int item)
 
 	if (action == MenuAction_Select || action == MenuAction_Cancel)
 	{
-		ClientCommand(client, next ? "drop" : " ");
+		ClientCommand(client, next ? "drop" : NULL_STRING);
 		Weapons.ListEnd[client] = next;
 	}
 
@@ -382,7 +387,7 @@ public Action BuyCommand(int client, const char[] command, int args)
 		{
 			Weapons.User[slot].GetString(client, weapon, sizeof(weapon));
 
-			if (!StrEqual(weapon, ""))
+			if (!StrEqual(weapon, NULL_STRING))
 			{
 				GiveWeapon(client, weapon);
 			}
@@ -509,6 +514,10 @@ void LoadSettings(char file[32])
 		} while (GameState.Settings.GotoNextKey(false));
 
 		GameState.Settings.Rewind();
+	}
+	else
+	{
+		Format(GameState.CurrentRound, sizeof(GameState.CurrentRound), "DM");
 	}
 
 	Weapons.Initialize();
