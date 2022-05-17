@@ -251,6 +251,9 @@ public Action OnPlayerDeath(Event hEvent, const char[] name, bool dontBroadcast)
 	int victim = GetClientOfUserId(hEvent.GetInt("userid"));
 	int weapon = GetEntPropEnt(attack, Prop_Data, "m_hActiveWeapon");
 
+	SetEntProp(attack, Prop_Send, "m_iHealth", 100);
+	SetEntProp(attack, Prop_Send, "m_ArmorValue", GetConVarBool(FindConVar("mp_max_armor")) ? 100 : 0);
+
 	SetEntProp(attack, Prop_Send, "m_bPlayerDominated", false, _, victim);
 	SetEntProp(victim, Prop_Send, "m_bPlayerDominatingMe", false, _, attack);
 
