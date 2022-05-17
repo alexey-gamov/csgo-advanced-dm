@@ -327,21 +327,24 @@ public Action ShowCurrentMode(Handle timer, int client)
 
 public int BuyMenuHandler(Menu menu, MenuAction action, int client, int item)
 {
-	char info[32];
-	bool next;
+	char income[32], choose[2][32];
 
 	if (action != MenuAction_End)
 	{
-		GetMenuItem(menu, item, info, sizeof(info));
-
-		next = !Weapons.ListEnd[client];
+		GetMenuItem(menu, item, income, sizeof(income));
+		ExplodeString(income, ":", choose, sizeof(choose), sizeof(choose[]));
 	}
 
 	if (action == MenuAction_DrawItem)
 	{
-		SplitString(info, ":", info, sizeof(info));
+		if (StrEqual(choose[0], "pistols") != Weapons.ListEnd[client])
+		{
+			return ITEMDRAW_RAWLINE;
+		}
 
-		if (StrEqual(info, "pistols") == next)
+		Format(income, sizeof(income), "mp_weapons_allow_%s", choose[0]);
+
+		if (!GetConVarInt(FindConVar(income)))
 		{
 			return ITEMDRAW_RAWLINE;
 		}
@@ -349,14 +352,14 @@ public int BuyMenuHandler(Menu menu, MenuAction action, int client, int item)
 
 	if (action == MenuAction_Select)
 	{
-		Format(info, sizeof(info), info[FindCharInString(info, ':') + 1]);
-
-		GiveWeapon(client, info);
-		Weapons.Store(client, info);
+		GiveWeapon(client, choose[1]);
+		Weapons.Store(client, choose[1]);
 	}
 
 	if (action == MenuAction_Select || action == MenuAction_Cancel)
 	{
+		bool next = !Weapons.ListEnd[client];
+
 		ClientCommand(client, next ? "drop" : NULL_STRING);
 		Weapons.ListEnd[client] = next;
 	}
