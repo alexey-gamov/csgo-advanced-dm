@@ -2,27 +2,27 @@
 {
 	"Current round"
 	{
-		"en"	"CURRENT ROUND"
-		"ru"	"ТЕКУЩИЙ РЕЖИМ"
+		"en"      "CURRENT ROUND"
+		"ru"      "ТЕКУЩИЙ РЕЖИМ"
 	}
 
 	"Next round"
 	{
-		"en"	"SWITCHING MODE TO"
-		"ru"	"ПЕРЕКЛЮЧЕНИЕ РЕЖИМА"
+		"en"      "SWITCHING MODE TO"
+		"ru"      "ПЕРЕКЛЮЧЕНИЕ РЕЖИМА"
 	}
 
 	"How to buy"
 	{
-		"#format"	"{1:c},{2:s}"
-		"en"		"For choosing weapons press {1}[{2}]"
-		"ru"		"Для открытия меню закупки нажмите {1}[{2}]"
+		"#format" "{1:c},{2:s}"
+		"en"      "For choosing weapons press {1}[{2}]"
+		"ru"      "Для открытия меню закупки нажмите {1}[{2}]"
 	}
 
 	"Buy menu"
 	{
-		"#format"	"{1:s},{2:s}"
-		"en"		"{1} (press {2})"
-		"ru"		"{1} (нажми {2})"
+		"#format" "{1:s},{2:s}"
+		"en"      "{1} (press {2})"
+		"ru"      "{1} (нажми {2})"
 	}
 }
