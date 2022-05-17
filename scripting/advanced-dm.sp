@@ -85,7 +85,7 @@ public Plugin myinfo =
 	name = "Advanced Deathmatch",
 	author = "alexey_gamov",
 	description = "Enchantments for classic DM",
-	version = "alpha",
+	version = "1.0.0",
 	url = "https://github.com/alexey-gamov/csgo-advanced-dm"
 }
 
@@ -118,7 +118,6 @@ public void OnPluginStart()
 
 	AddCommandListener(BuyCommand, "autobuy");
 	AddCommandListener(BuyCommand, "rebuy");
-	AddCommandListener(BuyCommand, "buy");
 	AddCommandListener(BuyCommand, "drop");
 
 	AddNormalSoundHook(DisableSound);
@@ -364,6 +363,7 @@ public int BuyMenuHandler(Menu menu, MenuAction action, int client, int item)
 		bool next = !Weapons.ListEnd[client];
 
 		ClientCommand(client, next ? "drop" : NULL_STRING);
+
 		Weapons.ListEnd[client] = next;
 	}
 
@@ -387,7 +387,7 @@ public Action BuyCommand(int client, const char[] command, int args)
 	else if (StrEqual(command, "rebuy"))
 	{
 		char weapon[32];
-		bool showup = false;
+		bool showup;
 
 		for (int slot = 1; slot >= 0; slot--)
 		{
@@ -412,11 +412,9 @@ public Action BuyCommand(int client, const char[] command, int args)
 		{
 			PrintToChat(client, "%T", "How to buy", client, 0x08, "G");
 		}
-
-		return Plugin_Handled;
 	}
 
-	return Plugin_Continue;
+	return Plugin_Handled;
 }
 
 public Action DisableMessages(Event hEvent, const char[] name, bool dontBroadcast)
@@ -462,8 +460,6 @@ public Action DisableSound(int clients[MAXPLAYERS], int &numClients, char sample
 		"player/death",
 		"player/pl_respawn",
 		"player/bhit_helmet",
-		//"physics/body",
-		//"player/kevlar",
 		"buttons/button14"
 	};
 
@@ -498,9 +494,11 @@ void LoadSettings(char file[32])
 	GameState.Settings = new KeyValues("server-commands");
 	GameState.Modes = new ArrayList(ByteCountToCells(64));
 
+	Format(GameState.CurrentRound, sizeof(GameState.CurrentRound), "DM");
+
 	BuildPath(Path_SM, path, sizeof(path), "configs/%s", file);
 
-	if (!FileToKeyValues(GameState.Settings, path))
+	if (FileExists(path) && !FileToKeyValues(GameState.Settings, path))
 	{
 		SetFailState("The configuration file could not be read");
 	}
@@ -520,10 +518,6 @@ void LoadSettings(char file[32])
 		} while (GameState.Settings.GotoNextKey(false));
 
 		GameState.Settings.Rewind();
-	}
-	else
-	{
-		Format(GameState.CurrentRound, sizeof(GameState.CurrentRound), "DM");
 	}
 
 	Weapons.Initialize();
