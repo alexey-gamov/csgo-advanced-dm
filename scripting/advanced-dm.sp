@@ -551,10 +551,13 @@ void GiveWeapon(int client, char[] weapon, bool fast_switch = true)
 	if (fast_switch)
 	{
 		SetEntPropFloat(client, Prop_Send, "m_flNextAttack", GetGameTime());
+		
+		entity = GetPlayerWeaponSlot(client, Weapons.Slot.GetNum(weapon));
+		client = GetEntPropEnt(client, Prop_Send, "m_hViewModel");
 
-		if (IsValidEntity((entity = GetEntPropEnt(client, Prop_Send, "m_hViewModel"))))
+		if (IsValidEntity(client) && entity != -1)
 		{
-			SetEntProp(entity, Prop_Send, "m_nSequence", StrEqual(weapon, "weapon_m4a1_silencer"));
+			SetEntProp(client, Prop_Send, "m_nSequence", StrEqual(weapon, "weapon_m4a1_silencer"));
 		}
 	}
 }
