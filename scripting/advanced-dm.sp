@@ -145,6 +145,8 @@ public void OnConfigsExecuted()
 		GameState.Settings.Rewind();
 	}
 
+	Weapons.BuyMenu.RemoveAllItems();
+
 	Weapons.Add("rifles", "weapon_ak47", "AK-47", 30);
 	Weapons.Add("rifles", "weapon_m4a1", "M4A1", 30);
 	Weapons.Add("rifles", "weapon_m4a1_silencer", "M4A1-S", 25);
