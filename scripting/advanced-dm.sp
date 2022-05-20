@@ -85,7 +85,7 @@ public Plugin myinfo =
 	name = "Advanced Deathmatch",
 	author = "alexey_gamov",
 	description = "Enchantments for classic DM",
-	version = "1.0.0",
+	version = "1.0.1",
 	url = "https://github.com/alexey-gamov/csgo-advanced-dm"
 }
 
@@ -104,6 +104,7 @@ public void OnPluginStart()
 	HookEvent("round_end", OnRoundPhase, EventHookMode_Pre);
 	HookEvent("round_prestart", OnRoundPhase, EventHookMode_Pre);
 	HookEvent("cs_win_panel_round", OnWinPanel, EventHookMode_Pre);
+	HookEvent("round_freeze_end", DisableMessages, EventHookMode_Pre);
 
 	HookEvent("server_cvar", DisableMessages, EventHookMode_Pre);
 	HookEvent("player_team", DisableMessages, EventHookMode_Pre);
@@ -289,12 +290,21 @@ public Action OnPlayerDeath(Event hEvent, const char[] name, bool dontBroadcast)
 
 public Action OnPlayerSpawn(Event hEvent, const char[] name, bool dontBroadcast)
 {
-	int client = GetClientOfUserId(hEvent.GetInt("userid"));
+	int entity, client = GetClientOfUserId(hEvent.GetInt("userid"));
 
 	if (IsPlayerAlive(client) && !IsFakeClient(client))
 	{
 		RequestFrame(RemoveRadar, client);
 		CreateTimer(0.5, ShowCurrentMode, client);
+
+		for (int slot = 1; slot >= 0; slot--)
+		{
+			if ((entity = GetPlayerWeaponSlot(client, slot)) != -1)
+			{
+				RemovePlayerItem(client, entity);
+				AcceptEntityInput(entity, "kill");
+			}
+		}
 	}
 }
 
