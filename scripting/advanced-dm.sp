@@ -75,6 +75,38 @@ enum struct Arsenal {
 
 		SetClientCookie(client, this.Cookies[slot], item);
 	}
+
+	void GetRandom(int slot, char[] weapon, int maxlength)
+	{
+		ArrayList Stack = new ArrayList(1, this.BuyMenu.ItemCount);
+
+		for (int i = 0; i < Stack.Length; i++)
+		{
+			Stack.Set(i, i);
+		}
+
+		char income[32], choose[2][32];
+
+		do
+		{
+			int random = GetRandomInt(0, Stack.Length - 1);
+
+			this.BuyMenu.GetItem(Stack.Get(random), income, sizeof(income));
+
+			ExplodeString(income, ":", choose, sizeof(choose), sizeof(choose[]));
+			Format(income, sizeof(income), "mp_weapons_allow_%s", choose[0]);
+
+			if (StrEqual(choose[0], "pistols") == !!slot && GetConVarInt(FindConVar(income)))
+			{
+				Format(weapon, maxlength, choose[1]);
+				return;
+			}
+			else
+			{
+				Stack.Erase(random);
+			}
+		} while (Stack.Length);
+	}
 }
 
 Storage GameState;
@@ -117,9 +149,10 @@ public void OnPluginStart()
 	HookUserMessage(GetUserMessageId("TextMsg"), DisableChat, true);
 	HookUserMessage(GetUserMessageId("RadioText"), DisableRadio, true);
 
-	AddCommandListener(BuyCommand, "autobuy");
+	AddCommandListener(BuyCommand, "buyrandom");
 	AddCommandListener(BuyCommand, "rebuy");
 	AddCommandListener(BuyCommand, "drop");
+	AddCommandListener(BuyCommand, "buy");
 
 	AddNormalSoundHook(DisableSound);
 	AddTempEntHook("Sparks", DisableEffect);
@@ -294,19 +327,23 @@ public Action OnPlayerSpawn(Event hEvent, const char[] name, bool dontBroadcast)
 {
 	int entity, client = GetClientOfUserId(hEvent.GetInt("userid"));
 
-	if (IsPlayerAlive(client) && !IsFakeClient(client))
+	for (int slot = 1; slot >= 0; slot--)
+	{
+		if ((entity = GetPlayerWeaponSlot(client, slot)) != -1)
+		{
+			RemovePlayerItem(client, entity);
+			AcceptEntityInput(entity, "kill");
+		}
+	}
+
+	if (!IsFakeClient(client))
 	{
 		RequestFrame(RemoveRadar, client);
 		CreateTimer(0.5, ShowCurrentMode, client);
-
-		for (int slot = 1; slot >= 0; slot--)
-		{
-			if ((entity = GetPlayerWeaponSlot(client, slot)) != -1)
-			{
-				RemovePlayerItem(client, entity);
-				AcceptEntityInput(entity, "kill");
-			}
-		}
+	}
+	else if (Weapons.BuyMenu.ItemCount)
+	{
+		FakeClientCommand(client, "buyrandom");
 	}
 }
 
@@ -401,31 +438,34 @@ public Action BuyCommand(int client, const char[] command, int args)
 			CancelClientMenu(client);
 		}
 	}
-	else if (StrEqual(command, "rebuy"))
+	else if (!StrEqual(command, "buy"))
 	{
 		char weapon[32];
-		bool showup;
+		bool random;
 
 		for (int slot = 1; slot >= 0; slot--)
 		{
-			Weapons.User[slot].GetString(client, weapon, sizeof(weapon));
+			if ((random = StrEqual(command, "buyrandom")))
+			{
+				Weapons.GetRandom(slot, weapon, sizeof(weapon));
+			}
+			else
+			{
+				Weapons.User[slot].GetString(client, weapon, sizeof(weapon));
+			}
 
-			if (!StrEqual(weapon, NULL_STRING))
+			if ((!StrEqual(weapon, NULL_STRING) && !random) || random)
 			{
 				GiveWeapon(client, weapon);
 			}
 			else
 			{
 				Weapons.ListEnd[client] = !!slot;
-				showup = true;
+				ClientCommand(client, "drop");
 			}
 		}
 
-		if (showup)
-		{
-			ClientCommand(client, "drop");
-		}
-		else
+		if (!StrEqual(weapon, NULL_STRING))
 		{
 			PrintToChat(client, "%T", "How to buy", client, 0x08, "G");
 		}
