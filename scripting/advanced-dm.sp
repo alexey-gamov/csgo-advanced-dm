@@ -314,7 +314,7 @@ public Action ShowCurrentMode(Handle timer, int client)
 {
 	Event hEvent = CreateEvent("show_survival_respawn_status");
 
-	if (hEvent != null && !GameState.RoundEnd && GameState.Modes.Length > 0 && GameState.CurrentRound[0])
+	if (hEvent != null && !GameState.RoundEnd && GameState.Modes.Length > 0)
 	{
 		hEvent.SetInt("duration", 3);
 		hEvent.SetInt("userid", -1);
@@ -386,6 +386,11 @@ public Action BuyCommand(int client, const char[] command, int args)
 {
 	if (StrEqual(command, "drop"))
 	{
+		if (GameRules_GetProp("m_bDMBonusActive"))
+		{
+			return Plugin_Continue;
+		}
+
 		if (!GetClientMenu(client))
 		{
 			Weapons.BuyMenu.SetTitle("%T", "Buy menu", client, GameState.CurrentRound, "G");
