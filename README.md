@@ -4,12 +4,12 @@ This sourcemod plugin is made for original CS:GO Deathmatch game mode.
 
 Main idea is to get rid of visual noise and add some warmup-style features.
 
-No speacial cvars are implemented - everything works around built-in command.
+No speacial cvars are implemented - everything works around built-in commands.
 
 ## Features
 
-- Cycle play modes *(configs + notifications)*
-- Buy menu *(saves over sessions)*
+- Cycle play modes *(configs & notifications)*
+- Buy menu *(cookies & random)*
 - Health/armor/clip restore on kill
 
 #### What is disabled
@@ -17,9 +17,9 @@ No speacial cvars are implemented - everything works around built-in command.
 - System messages and hints
 - Radar & chickens
 - Built-in sounds
-- Bots kill feed
+- Bot kill feed
 
-## Installing
+## Installation
 
 1. Install latest [MetaMod](https://www.sourcemm.net/downloads.php?branch=stable) and [SourceMod](https://www.sourcemod.net/downloads.php?branch=stable) addons.
 1. Download the `zip` archieve from **release** section and unpack everything to your server.
