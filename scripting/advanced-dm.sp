@@ -403,7 +403,15 @@ public int BuyMenuHandler(Menu menu, MenuAction action, int client, int item)
 
 	if (action == MenuAction_Select)
 	{
-		GiveWeapon(client, choose[1]);
+		if (GetEntProp(client, Prop_Send, "m_bGunGameImmunity"))
+		{
+			GiveWeapon(client, choose[1]);
+		}
+		else
+		{
+			PrintToChat(client, " %T", "Wait respawn", client, 0x07);
+		}
+
 		Weapons.Store(client, choose[1]);
 	}
 
@@ -465,7 +473,7 @@ public Action BuyCommand(int client, const char[] command, int args)
 			}
 		}
 
-		if (!StrEqual(weapon, NULL_STRING))
+		if (!StrEqual(weapon, NULL_STRING) && GetEntProp(client, Prop_Send, "m_bGunGameImmunity"))
 		{
 			PrintToChat(client, "%T", "How to buy", client, 0x08, "G");
 		}

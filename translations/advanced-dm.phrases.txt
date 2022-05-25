@@ -19,6 +19,13 @@
 		"ru"      "Для открытия меню закупки нажмите {1}[{2}]"
 	}
 
+	"Wait respawn"
+	{
+		"#format" "{1:c}"
+		"en"      "{1} Weapon will be changed on next respawn"
+		"ru"      "{1} Оружие сменится при следующем возраждении"
+	}
+
 	"Buy menu"
 	{
 		"#format" "{1:s},{2:s}"
