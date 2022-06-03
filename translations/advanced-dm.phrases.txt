@@ -2,34 +2,72 @@
 {
 	"Current round"
 	{
+		"br"      "MODO ATUAL"
+		"chi"     "当前模式"
 		"en"      "CURRENT ROUND"
+		"es"      "MODO ACTUAL"
+		"de"      "AKTUELLER MODUS"
+		"fr"      "MODE ACTUEL"
+		"pl"      "AKTUALNY TRYB"
 		"ru"      "ТЕКУЩИЙ РЕЖИМ"
+		"jp"      "現在のモード"
 	}
 
 	"Next round"
 	{
+		"br"      "INTERRUPTOR DE MODO"
+		"chi"     "切换模式到"
 		"en"      "SWITCHING MODE TO"
+		"es"      "CAMBIO DE MODO"
+		"de"      "MODUSSCHALTER"
+		"fr"      "CHANGEMENT DE MODE"
+		"pl"      "PRZEŁĄCZANIE TRYBU NA"
 		"ru"      "ПЕРЕКЛЮЧЕНИЕ РЕЖИМА"
+		"jp"      "モードをに切り替えます"
 	}
 
 	"How to buy"
 	{
 		"#format" "{1:c},{2:s}"
-		"en"      "For choosing weapons press {1}[{2}]"
-		"ru"      "Для открытия меню закупки нажмите {1}[{2}]"
+
+		"br"      "Para abrir o menu de compra, pressione {1}[{2}]"
+		"chi"     "要打开购买菜单，请按 {1}[{2}]"
+		"en"      "For choosing weapons, press {1}[{2}]"
+		"es"      "Para abrir el menú de compra, presione {1}[{2}]"
+		"de"      "Um das kaufmenü zu öffnen, drücken sie {1}[{2}]"
+		"fr"      "Pour ouvrir le menu d'achat, cliquez sur {1}[{2}]"
+		"pl"      "Aby otworzyć menu zakupów, naciśnij {1}[{2}]"
+		"ru"      "Для открытия меню закупки, нажмите {1}[{2}]"
+		"jp"      "購入メニューを開くには、を押します {1}[{2}]"
 	}
 
 	"Wait respawn"
 	{
 		"#format" "{1:c}"
+
+		"br"      "{1} A arma mudará no próximo respawn"
+		"chi"     "{1} 武器将在下次重生时改变"
 		"en"      "{1} Weapon will be changed on next respawn"
-		"ru"      "{1} Оружие сменится при следующем возраждении"
+		"es"      "{1} El arma cambiará en la próxima reaparición"
+		"de"      "{1} Die waffe ändert sich beim nächsten respawn"
+		"fr"      "{1} L'arme changera à la prochaine réapparition"
+		"pl"      "{1} Broń zmieni się przy następnym odrodzeniu"
+		"ru"      "{1} Оружие сменится при следующем возрождении"
+		"jp"      "{1} 武器は次のリスポーンで変更されます"
 	}
 
 	"Buy menu"
 	{
 		"#format" "{1:s},{2:s}"
+
+		"br"      "{1} (clique {2})"
+		"chi"     "{1} (点击 {2})"
 		"en"      "{1} (press {2})"
+		"es"      "{1} (hacer clic {2})"
+		"de"      "{1} (klicken {2})"
+		"fr"      "{1} (cliquez sur {2})"
+		"pl"      "{1} (kliknij {2})"
 		"ru"      "{1} (нажми {2})"
+		"jp"      "{1} (クリック {2})"
 	}
 }
