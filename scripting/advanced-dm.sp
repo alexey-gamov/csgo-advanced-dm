@@ -117,7 +117,7 @@ public Plugin myinfo =
 	name = "Advanced Deathmatch",
 	author = "alexey_gamov",
 	description = "Enchantments for classic DM",
-	version = "1.0.1",
+	version = "1.0.2",
 	url = "https://github.com/alexey-gamov/csgo-advanced-dm"
 }
 
@@ -407,7 +407,7 @@ public int BuyMenuHandler(Menu menu, MenuAction action, int client, int item)
 		{
 			GiveWeapon(client, choose[1]);
 		}
-		else
+		else if (Weapons.ListEnd[client])
 		{
 			PrintToChat(client, " %T", "Wait respawn", client, 0x07);
 		}
@@ -446,7 +446,7 @@ public Action BuyCommand(int client, const char[] command, int args)
 			CancelClientMenu(client);
 		}
 	}
-	else if (!StrEqual(command, "buy"))
+	else if (!StrEqual(command, "buy") && (GetEntProp(client, Prop_Send, "m_bGunGameImmunity") || IsFakeClient(client)))
 	{
 		char weapon[32];
 		bool random;
@@ -473,7 +473,7 @@ public Action BuyCommand(int client, const char[] command, int args)
 			}
 		}
 
-		if (!StrEqual(weapon, NULL_STRING) && GetEntProp(client, Prop_Send, "m_bGunGameImmunity"))
+		if (!StrEqual(weapon, NULL_STRING))
 		{
 			PrintToChat(client, "%T", "How to buy", client, 0x08, "G");
 		}
