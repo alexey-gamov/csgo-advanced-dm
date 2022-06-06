@@ -302,6 +302,12 @@ public Action OnPlayerDeath(Event hEvent, const char[] name, bool dontBroadcast)
 		SetEntProp(weapon, Prop_Send, "m_iClip1", Weapons.Clip.GetNum(weaponName) + 1);
 	}
 
+	if (IsClientInGame(attack))
+	{
+		RemoveSound(attack);
+		RequestFrame(RemoveSound, attack);
+	}
+
 	if (!IsFakeClient(attack))
 	{
 		Handle fade = StartMessageOne("Fade", attack);
@@ -594,6 +600,11 @@ void LoadSettings(char file[32])
 			OnClientCookiesCached(i);
 		}
 	}
+}
+
+void RemoveSound(int client)
+{
+	StopSound(client, SNDCHAN_ITEM, "buttons/bell1.wav");
 }
 
 void RemoveRadar(int client)
