@@ -1,15 +1,15 @@
-# Advanced Deathmatch
+# Advanced Deathmatch [![--](https://img.shields.io/badge/visit-alliedmodders.net-success)](https://forums.alliedmods.net/showthread.php?t=337928) [![--](https://img.shields.io/badge/visit-hlmod.ru-informational)](https://hlmod.ru/resources/advanced-deathmatch.3735/)
 
 This sourcemod plugin is made for original CS:GO Deathmatch game mode.
 
 Main idea is to get rid of visual noise and add some warmup-style features.
 
-No speacial cvars are implemented - everything works around built-in commands.
+No speacial cvars are implemented: everything works around built-in commands.
 
 ## Features
 
-- Cycle play modes *(configs & notifications)*
-- Buy menu *(cookies & random)*
+- Play modes *(multi_cfg & notifications)*
+- Buy menu on <kbd>drop</kbd> key *(cookies & random)*
 - Health/armor/clip restore on kill
 
 #### What is disabled
