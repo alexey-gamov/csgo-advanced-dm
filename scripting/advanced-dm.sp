@@ -182,7 +182,7 @@ public void OnConfigsExecuted()
 
 	Weapons.Add("rifles", "weapon_ak47", "AK-47", 30);
 	Weapons.Add("rifles", "weapon_m4a1", "M4A1", 30);
-	Weapons.Add("rifles", "weapon_m4a1_silencer", "M4A1-S", 25);
+	Weapons.Add("rifles", "weapon_m4a1_silencer", "M4A1-S", 20);
 	Weapons.Add("rifles", "weapon_sg556", "SG 553", 30);
 	Weapons.Add("rifles", "weapon_aug", "AUG", 30);
 	Weapons.Add("rifles", "weapon_galilar", "Galil AR", 35);
