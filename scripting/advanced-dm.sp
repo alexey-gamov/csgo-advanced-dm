@@ -187,7 +187,7 @@ public void OnConfigsExecuted()
 	Weapons.Add("rifles", "weapon_aug", "AUG", 30);
 	Weapons.Add("rifles", "weapon_galilar", "Galil AR", 35);
 	Weapons.Add("rifles", "weapon_famas", "FAMAS", 25);
-	Weapons.Add("rifles", "weapon_awp", "AWP", 10);
+	Weapons.Add("rifles", "weapon_awp", "AWP", 5);
 	Weapons.Add("rifles", "weapon_ssg08", "SSG 08", 10);
 	Weapons.Add("rifles", "weapon_g3sg1", "G3SG1", 20);
 	Weapons.Add("rifles", "weapon_scar20", "SCAR-20", 20);
