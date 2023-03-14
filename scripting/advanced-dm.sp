@@ -202,14 +202,14 @@ public void OnConfigsExecuted()
 	Weapons.Add("smgs", "weapon_mac10", "MAC-10", 30);
 	Weapons.Add("smgs", "weapon_mp9", "MP9", 30);
 	Weapons.Add("smgs", "weapon_mp7", "MP7", 30);
-	Weapons.Add("smgs", "weapon_mp5sd", "MP5SD", 30); 
+	Weapons.Add("smgs", "weapon_mp5sd", "MP5-SD", 30); 
 	Weapons.Add("smgs", "weapon_ump45", "UMP-45", 25);
 	Weapons.Add("smgs", "weapon_p90", "P90", 50);
 	Weapons.Add("smgs", "weapon_bizon", "PP-Bizon", 64);
 
 	Weapons.Add("pistols", "weapon_glock", "Glock-18", 20);
 	Weapons.Add("pistols", "weapon_p250", "P250", 13);
-	Weapons.Add("pistols", "weapon_cz75a", "CZ75-A", 12);
+	Weapons.Add("pistols", "weapon_cz75a", "CZ75-Auto", 12);
 	Weapons.Add("pistols", "weapon_usp_silencer", "USP-S", 12);
 	Weapons.Add("pistols", "weapon_fiveseven", "Five-SeveN", 20);
 	Weapons.Add("pistols", "weapon_deagle", "Desert Eagle", 7);
@@ -423,11 +423,10 @@ public int BuyMenuHandler(Menu menu, MenuAction action, int client, int item)
 
 	if (action == MenuAction_Select || action == MenuAction_Cancel)
 	{
-		bool next = !Weapons.ListEnd[client];
-
-		ClientCommand(client, next ? "drop" : NULL_STRING);
-
-		Weapons.ListEnd[client] = next;
+		if (Weapons.ListEnd[client] ^= true && IsClientConnected(client))
+		{
+			ClientCommand(client, "drop");
+		}
 	}
 
 	return 0;
@@ -447,7 +446,7 @@ public Action BuyCommand(int client, const char[] command, int args)
 			Weapons.BuyMenu.SetTitle("%T", "Buy menu", client, GameState.CurrentRound, "G");
 			Weapons.BuyMenu.Display(client, MENU_TIME_FOREVER);
 		}
-		else if(!Weapons.ListEnd[client])
+		else if (!Weapons.ListEnd[client])
 		{
 			CancelClientMenu(client);
 		}
