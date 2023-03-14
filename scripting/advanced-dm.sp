@@ -39,6 +39,8 @@ enum struct Arsenal {
 	Handle Cookies[2];
 	ArrayList User[2];
 
+	StringMap Restrict;
+
 	bool ListEnd[MAXPLAYERS];
 
 	void Initialize()
@@ -50,18 +52,20 @@ enum struct Arsenal {
 		this.User[1] = new ArrayList(32, MAXPLAYERS);
 
 		this.BuyMenu = new Menu(BuyMenuHandler, MenuAction_DrawItem);
+		this.Restrict = new StringMap();
 
 		this.Slot = new KeyValues("weapon_slot");
 		this.Clip = new KeyValues("weapon_clip");
 	}
 
-	void Add(char[] category, char[] weapon, char[] name, int clip)
+	void Add(char[] category, char[] weapon, int id, char[] name, int clip)
 	{
 		char item[32];
 
 		Format(item, sizeof(item), "%s:%s", category, weapon);
 
 		this.BuyMenu.AddItem(item, name);
+		this.Restrict.SetValue(weapon, id);
 
 		this.Slot.SetNum(weapon, StrEqual(category, "pistols"));
 		this.Clip.SetNum(weapon, clip);
@@ -96,7 +100,7 @@ enum struct Arsenal {
 			ExplodeString(income, ":", choose, sizeof(choose), sizeof(choose[]));
 			Format(income, sizeof(income), "mp_weapons_allow_%s", choose[0]);
 
-			if (StrEqual(choose[0], "pistols") == !!slot && GetConVarInt(FindConVar(income)))
+			if (StrEqual(choose[0], "pistols") == !!slot && !this.Restricted(choose[1]) && GetConVarInt(FindConVar(income)))
 			{
 				Format(weapon, maxlength, choose[1]);
 				return;
@@ -106,6 +110,12 @@ enum struct Arsenal {
 				Stack.Erase(random);
 			}
 		} while (Stack.Length);
+	}
+
+	bool Restricted(char[] weapon, int state = -1)
+	{
+		this.Restrict.GetValue(weapon, state);
+		return state < 0;
 	}
 }
 
@@ -117,7 +127,7 @@ public Plugin myinfo =
 	name = "Advanced Deathmatch",
 	author = "alexey_gamov",
 	description = "Enchantments for classic DM",
-	version = "1.0.2",
+	version = "1.0.3",
 	url = "https://github.com/alexey-gamov/csgo-advanced-dm"
 }
 
@@ -145,6 +155,8 @@ public void OnPluginStart()
 
 	HookEvent("player_death", OnPlayerDeath, EventHookMode_Pre);
 	HookEvent("player_spawn", OnPlayerSpawn, EventHookMode_Post);
+
+	HookConVarChange(FindConVar("mp_items_prohibited"), OnCvarChange);
 
 	HookUserMessage(GetUserMessageId("TextMsg"), DisableChat, true);
 	HookUserMessage(GetUserMessageId("RadioText"), DisableRadio, true);
@@ -180,43 +192,43 @@ public void OnConfigsExecuted()
 
 	Weapons.BuyMenu.RemoveAllItems();
 
-	Weapons.Add("rifles", "weapon_ak47", "AK-47", 30);
-	Weapons.Add("rifles", "weapon_m4a1", "M4A1", 30);
-	Weapons.Add("rifles", "weapon_m4a1_silencer", "M4A1-S", 20);
-	Weapons.Add("rifles", "weapon_sg556", "SG 553", 30);
-	Weapons.Add("rifles", "weapon_aug", "AUG", 30);
-	Weapons.Add("rifles", "weapon_galilar", "Galil AR", 35);
-	Weapons.Add("rifles", "weapon_famas", "FAMAS", 25);
-	Weapons.Add("rifles", "weapon_awp", "AWP", 5);
-	Weapons.Add("rifles", "weapon_ssg08", "SSG 08", 10);
-	Weapons.Add("rifles", "weapon_g3sg1", "G3SG1", 20);
-	Weapons.Add("rifles", "weapon_scar20", "SCAR-20", 20);
+	Weapons.Add("rifles", "weapon_ak47", 7, "AK-47", 30);
+	Weapons.Add("rifles", "weapon_m4a1", 16, "M4A1", 30);
+	Weapons.Add("rifles", "weapon_m4a1_silencer", 60, "M4A1-S", 20);
+	Weapons.Add("rifles", "weapon_sg556", 39, "SG 553", 30);
+	Weapons.Add("rifles", "weapon_aug", 8, "AUG", 30);
+	Weapons.Add("rifles", "weapon_galilar", 13, "Galil AR", 35);
+	Weapons.Add("rifles", "weapon_famas", 10, "FAMAS", 25);
+	Weapons.Add("rifles", "weapon_awp", 9, "AWP", 5);
+	Weapons.Add("rifles", "weapon_ssg08", 40, "SSG 08", 10);
+	Weapons.Add("rifles", "weapon_g3sg1", 11, "G3SG1", 20);
+	Weapons.Add("rifles", "weapon_scar20", 38, "SCAR-20", 20);
 
-	Weapons.Add("heavy", "weapon_m249", "M249", 100);
-	Weapons.Add("heavy", "weapon_negev", "Negev", 150);
-	Weapons.Add("heavy", "weapon_nova", "Nova", 8);
-	Weapons.Add("heavy", "weapon_xm1014", "XM1014", 7);
-	Weapons.Add("heavy", "weapon_sawedoff", "Sawed-Off", 7);
-	Weapons.Add("heavy", "weapon_mag7", "MAG-7", 5);
+	Weapons.Add("heavy", "weapon_m249", 14, "M249", 100);
+	Weapons.Add("heavy", "weapon_negev", 28, "Negev", 150);
+	Weapons.Add("heavy", "weapon_nova", 35, "Nova", 8);
+	Weapons.Add("heavy", "weapon_xm1014", 25, "XM1014", 7);
+	Weapons.Add("heavy", "weapon_sawedoff", 29, "Sawed-Off", 7);
+	Weapons.Add("heavy", "weapon_mag7", 27, "MAG-7", 5);
 
-	Weapons.Add("smgs", "weapon_mac10", "MAC-10", 30);
-	Weapons.Add("smgs", "weapon_mp9", "MP9", 30);
-	Weapons.Add("smgs", "weapon_mp7", "MP7", 30);
-	Weapons.Add("smgs", "weapon_mp5sd", "MP5-SD", 30); 
-	Weapons.Add("smgs", "weapon_ump45", "UMP-45", 25);
-	Weapons.Add("smgs", "weapon_p90", "P90", 50);
-	Weapons.Add("smgs", "weapon_bizon", "PP-Bizon", 64);
+	Weapons.Add("smgs", "weapon_mac10", 17, "MAC-10", 30);
+	Weapons.Add("smgs", "weapon_mp9", 34, "MP9", 30);
+	Weapons.Add("smgs", "weapon_mp7", 33, "MP7", 30);
+	Weapons.Add("smgs", "weapon_mp5sd", 23, "MP5-SD", 30);
+	Weapons.Add("smgs", "weapon_ump45", 24, "UMP-45", 25);
+	Weapons.Add("smgs", "weapon_p90", 19, "P90", 50);
+	Weapons.Add("smgs", "weapon_bizon", 26, "PP-Bizon", 64);
 
-	Weapons.Add("pistols", "weapon_glock", "Glock-18", 20);
-	Weapons.Add("pistols", "weapon_p250", "P250", 13);
-	Weapons.Add("pistols", "weapon_cz75a", "CZ75-Auto", 12);
-	Weapons.Add("pistols", "weapon_usp_silencer", "USP-S", 12);
-	Weapons.Add("pistols", "weapon_fiveseven", "Five-SeveN", 20);
-	Weapons.Add("pistols", "weapon_deagle", "Desert Eagle", 7);
-	Weapons.Add("pistols", "weapon_revolver", "R8", 8);
-	Weapons.Add("pistols", "weapon_elite", "Dual Berettas", 30);
-	Weapons.Add("pistols", "weapon_tec9", "Tec-9", 24);
-	Weapons.Add("pistols", "weapon_hkp2000", "P2000", 13);
+	Weapons.Add("pistols", "weapon_glock", 4, "Glock-18", 20);
+	Weapons.Add("pistols", "weapon_p250", 36, "P250", 13);
+	Weapons.Add("pistols", "weapon_cz75a", 63, "CZ75-Auto", 12);
+	Weapons.Add("pistols", "weapon_usp_silencer", 61, "USP-S", 12);
+	Weapons.Add("pistols", "weapon_fiveseven", 3, "Five-SeveN", 20);
+	Weapons.Add("pistols", "weapon_deagle", 1, "Desert Eagle", 7);
+	Weapons.Add("pistols", "weapon_revolver", 64, "R8", 8);
+	Weapons.Add("pistols", "weapon_elite", 2, "Dual Berettas", 30);
+	Weapons.Add("pistols", "weapon_tec9", 30, "Tec-9", 24);
+	Weapons.Add("pistols", "weapon_hkp2000", 32, "P2000", 13);
 }
 
 public void OnClientCookiesCached(int client)
@@ -401,7 +413,7 @@ public int BuyMenuHandler(Menu menu, MenuAction action, int client, int item)
 
 		Format(income, sizeof(income), "mp_weapons_allow_%s", choose[0]);
 
-		if (!GetConVarInt(FindConVar(income)))
+		if (!GetConVarInt(FindConVar(income)) || Weapons.Restricted(choose[1]))
 		{
 			return ITEMDRAW_RAWLINE;
 		}
@@ -465,6 +477,7 @@ public Action BuyCommand(int client, const char[] command, int args)
 			else
 			{
 				Weapons.User[slot].GetString(client, weapon, sizeof(weapon));
+				Format(weapon, sizeof(weapon), Weapons.Restricted(weapon) ? NULL_STRING : weapon);
 			}
 
 			if ((!StrEqual(weapon, NULL_STRING) && !random) || random)
@@ -554,6 +567,35 @@ public void OnEntityCreated(int entity, const char[] classname)
 	if (StrEqual(classname, "chicken"))
 	{
 		AcceptEntityInput(entity, "kill");
+	}
+}
+
+public void OnCvarChange(ConVar convar, const char[] previous, const char[] current)
+{
+	int id, next;
+	char key[32];
+
+	ArrayList Items = new ArrayList();
+
+	while ((id = SplitString(current[next], ",", key, sizeof(key))) != -1)
+	{
+		Items.Push(StringToInt(key));
+		next += id;
+	}
+
+	Items.Push(StringToInt(current[next]));
+
+	StringMapSnapshot Temp = Weapons.Restrict.Snapshot();
+
+	for (int item = 0; item < Temp.Length; item++)
+	{
+		Temp.GetKey(item, key, sizeof(key));
+		Weapons.Restrict.GetValue(key, id);
+
+		id = id < 0 ? -id : id;
+		id = Items.FindValue(id) != -1 ? -id : id;
+
+		Weapons.Restrict.SetValue(key, id);
 	}
 }
 
